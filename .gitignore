@@ -17,3 +17,7 @@
 
 /src/DataFixtures/AppFixtures.php
 /public/images/avatars/
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
