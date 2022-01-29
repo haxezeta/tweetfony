@@ -54,6 +54,27 @@ class ApiController extends AbstractController
         return new JsonResponse($result);
       }
 
-      
+      function postTweetfonyUser(Request $request) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['userName' => $request->request->get("userName")]);
+        if ($user) {
+          return new JsonResponse([
+            'error' => 'UserName already exists'
+          ], 409);
+        }
+        $user = new User();
+        $user->setName($request->request->get("name"));
+        $user->setUserName($request->request->get("userName"));
+        $entityManager->persist($user);
+        $entityManager->flush();
+        $result = new \stdClass();
+        $result->id = $user->getId();
+        $result->name = $user->getName();
+        $result->userName = $user->getUserName();
+        $result->likes = array(); // Como no tiene likes no hace falta crear enlaces
+        $result->tweets = array(); // Como no tiene tweets no hace falta crear enlaces
+        return new JsonResponse($result, 201);
+      }
+
 
 }
