@@ -116,7 +116,7 @@ class ApiController extends AbstractController
           return new JsonResponse($results);
       }
 
-      function getTweetfonyUsers()
+    function getTweetfonyUsers()
     {
       
         $entityManager = $this->getDoctrine()->getManager();
@@ -149,7 +149,58 @@ class ApiController extends AbstractController
         return new JsonResponse($results);
     }
 
-    
+    function postTweet(Request $request)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $entityManager->getRepository(User::class)->find($request->request->get("userId"));
+        if ($user == null) {
+            return new JsonResponse([
+                'error' => 'User not found'
+            ], 404);
+        }
 
+        $tweet = new Tweet();
+        $tweet->setText($request->request->get("text"));
+        $tweet->setDate(new \DateTime());
+        $tweet->setUser($user);
+        $entityManager->persist($tweet);
+        $entityManager->flush();
+
+      
+        $result = new \stdClass();
+        $result->id = $tweet->getId();
+        $result->date = $tweet->getDate();
+        $result->text = $tweet->getText();
+        $result->user = $this->generateUrl('api_get_user', [
+            'id' => $user->getId(),
+        ], UrlGeneratorInterface::ABSOLUTE_URL); 
+        $result->likes = array(); 
+
+        return new JsonResponse($result, 201);
+    }
+
+    function postTweetfonyUser(Request $request) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $entityManager->getRepository(User::class)->findOneBy(['userName' => $request->request->get("userName")]);
+        if ($user) {
+          return new JsonResponse([
+            'error' => 'UserName already exists'
+          ], 409);
+        }
+        $user = new User();
+        $user->setName($request->request->get("name"));
+        $user->setUserName($request->request->get("userName"));
+        $entityManager->persist($user);
+        $entityManager->flush();
+        $result = new \stdClass();
+        $result->id = $user->getId();
+        $result->name = $user->getName();
+        $result->userName = $user->getUserName();
+        $result->likes = array(); 
+        $result->tweets = array(); 
+
+        return new JsonResponse($result, 201);
+      }
+      
       
 }
